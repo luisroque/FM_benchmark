@@ -1,0 +1,7 @@
+chronos-forecasting @ git+https://github.com/amazon-science/chronos-forecasting.git@6a9c8dadac04eb85befc935043e3e2cce914267f
+gluonts==0.14.4
+uni2ts @ git+https://github.com/SalesforceAIResearch/uni2ts@964240482e1f444987fe8ef8451871f1a57dd568
+torch==2.2.1
+numpy==1.26.2
+pandas==2.1.3
+scikit-learn==1.3.2
