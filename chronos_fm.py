@@ -54,7 +54,7 @@ def mase(y_true, y_pred, h, m: int = 1):
 
 
 def chronos_forecast(model, data, horizon, target):
-    context = torch.tensor(data[target].tolist())
+    context = torch.tensor(data[-horizon:][target].tolist())
     forecast = model.predict(context, horizon)
     return np.quantile(forecast[0].numpy(), [0.1, 0.5, 0.9], axis=0)
 
@@ -96,9 +96,10 @@ for f in features_files:
 
         for i, ts in enumerate(all_ids, 1):
             print(f"[{i}/{len(all_ids)}] Forecasting for series: {ts}")
-            ts_data = test_df[test_df['unique_id'] == ts]
-            lower, mid, upper = chronos_forecast(pipeline, ts_data, H, TARGET)
-            forecast_df = convert_forecast_to_pandas([lower, mid, upper], ts_data)
+            test_data = test_df[test_df['unique_id'] == ts]
+            train_data = train_df[train_df['unique_id'] == ts]
+            lower, mid, upper = chronos_forecast(pipeline, train_data, H, TARGET)
+            forecast_df = convert_forecast_to_pandas([lower, mid, upper], test_data)
             forecasts.append(forecast_df)
 
         forecast_df = pd.concat(forecasts).reset_index(drop=True)
