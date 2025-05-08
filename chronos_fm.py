@@ -52,10 +52,12 @@ def mase(y_true, y_pred, h, m: int = 1):
     mase_value = np.mean(np.abs(y_true_h - y_pred_h)) / scale
     return float(mase_value)
 
+
 def chronos_forecast(model, data, horizon, target):
     context = torch.tensor(data[target].tolist())
     forecast = model.predict(context, horizon)
     return np.quantile(forecast[0].numpy(), [0.1, 0.5, 0.9], axis=0)
+
 
 def convert_forecast_to_pandas(forecast, holdout_set):
     forecast_pd = holdout_set[["unique_id", "ds"]].copy()
@@ -63,6 +65,7 @@ def convert_forecast_to_pandas(forecast, holdout_set):
     forecast_pd["forecast"] = forecast[1]
     forecast_pd["forecast_upper"] = forecast[2]
     return forecast_pd
+
 
 results = []
 
@@ -101,7 +104,8 @@ for f in features_files:
         forecast_df = pd.concat(forecasts).reset_index(drop=True)
 
         # merge with actuals
-        merged = test_df.merge(forecast_df[["unique_id", "ds", "forecast"]], on=["unique_id", "ds"])
+        merged = df.merge(forecast_df[["unique_id", "ds", "forecast"]], on=["unique_id", "ds"], how='left')
+        merged.sort_values(by=["unique_id", "ds"], inplace=True)
         mase_series = merged.groupby("unique_id").apply(lambda g: mase(g["y"], g["forecast"], h=H, m=mase_seasonality))
         mean_mase = mase_series.mean()
         print(f"Mean MASE ({model_size}): {mean_mase:.4f}")
