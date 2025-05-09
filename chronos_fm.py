@@ -54,7 +54,7 @@ def mase(y_true, y_pred, h, m: int = 1):
 
 
 def chronos_forecast(model, data, horizon, target):
-    context = torch.tensor(data[-horizon:][target].tolist())
+    context = torch.tensor(data[target].tolist())
     forecast = model.predict(context, horizon)
     return np.quantile(forecast[0].numpy(), [0.1, 0.5, 0.9], axis=0)
 

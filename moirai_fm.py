@@ -96,7 +96,7 @@ for model_size in ("small", "large"):
         model = MoiraiForecast(
             module=MoiraiModule.from_pretrained(f"Salesforce/moirai-1.1-R-{model_size}"),
             prediction_length=FORECAST_HORIZON,
-            context_length=config["H"],
+            context_length=3000,
             patch_size='auto',
             num_samples=100,
             target_dim=1,
