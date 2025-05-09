@@ -69,29 +69,30 @@ def convert_forecast_to_pandas(forecast, holdout_set):
 
 results = []
 
-for f in features_files:
-    print(f"\nProcessing: {f}")
-    filename = os.path.basename(f).replace("_features.pkl", "")
-    group_name, freq_type = filename.split("_")
-    config = DATASET_GROUP_FREQ[group_name][freq_type]
-    FREQ = config["FREQ"]
-    H = config["H"]
-    mase_seasonality = SEASONALITY_MAP[FREQ]
+for model_size, pipeline in [("tiny", pipeline_tiny), ("large", pipeline_large)]:
+    print(f"Running Chronos-{model_size}")
+    for f in features_files:
+        print(f"\nProcessing: {f}")
+        filename = os.path.basename(f).replace("_features.pkl", "")
+        group_name, freq_type = filename.split("_")
+        config = DATASET_GROUP_FREQ[group_name][freq_type]
+        FREQ = config["FREQ"]
+        H = config["H"]
+        mase_seasonality = SEASONALITY_MAP[FREQ]
 
-    # load data
-    dataset = joblib.load(f)
-    df = dataset["test_long"]
-    df[TIME_COL] = pd.to_datetime(df[TIME_COL])
-    df = df.sort_values(["unique_id", TIME_COL])
-    all_ids = df['unique_id'].unique()
+        # load data
+        dataset = joblib.load(f)
+        df = dataset["test_long"]
+        df[TIME_COL] = pd.to_datetime(df[TIME_COL])
+        df = df.sort_values(["unique_id", TIME_COL])
+        all_ids = df['unique_id'].unique()
 
-    # train/test split
-    train_df = df.groupby("unique_id", group_keys=False).apply(lambda g: g.iloc[:-H])
-    test_df = df.groupby("unique_id", group_keys=False).apply(lambda g: g.iloc[-H:])
-    print("Train/Test shapes:", train_df.shape, test_df.shape)
+        # train/test split
+        train_df = df.groupby("unique_id", group_keys=False).apply(lambda g: g.iloc[:-H])
+        test_df = df.groupby("unique_id", group_keys=False).apply(lambda g: g.iloc[-H:])
+        print("Train/Test shapes:", train_df.shape, test_df.shape)
 
-    for model_size, pipeline in [("tiny", pipeline_tiny), ("large", pipeline_large)]:
-        print(f"Running Chronos-{model_size} on {filename}")
+
         forecasts = []
 
         for i, ts in enumerate(all_ids, 1):
